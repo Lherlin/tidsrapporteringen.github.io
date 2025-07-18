@@ -62,9 +62,12 @@ All colors MUST be HSL.
     /* Construction-focused spacing */
     --touch-target: 3rem; /* 48px minimum for easy touch */
 
-    --radius: 0.5rem;
+    /* Animation and transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s ease-out;
+  }
 
-    --sidebar-background: 0 0% 98%;
+  .dark {
 
     --sidebar-foreground: 240 5.3% 26.1%;
 

@@ -2,20 +2,29 @@ import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { TimeClockCard } from "@/components/TimeClockCard";
 import { ProjectSelector } from "@/components/ProjectSelector";
+import { ProjectFolders } from "@/components/ProjectFolders";
+import { QuickTimeEntry } from "@/components/QuickTimeEntry";
 import { DailyOverview } from "@/components/DailyOverview";
 import { UserProfile } from "@/components/UserProfile";
+import { AdminDashboard } from "@/components/AdminDashboard";
+import { PushNotifications } from "@/components/PushNotifications";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, TrendingUp, Clock, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { BarChart3, TrendingUp, Clock, Users, Settings, Shield, Plus, Mail } from "lucide-react";
 
-type TabType = 'clock' | 'overview' | 'profile' | 'reports';
+type TabType = 'clock' | 'projects' | 'overview' | 'admin' | 'profile' | 'notifications';
+type UserRole = 'admin' | 'employee';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<TabType>('clock');
+  const [userRole, setUserRole] = useState<UserRole>('employee'); // In real app, this would come from authentication
   const [isWorking, setIsWorking] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [selectedProjectName, setSelectedProjectName] = useState<string>("");
   const [workTime, setWorkTime] = useState("00:00");
   const [startTime, setStartTime] = useState<Date | null>(null);
+  const [timeEntryMode, setTimeEntryMode] = useState<'clock' | 'quick'>('clock');
 
   // Timer logic for tracking work time
   useEffect(() => {
@@ -50,108 +59,130 @@ const Index = () => {
     setStartTime(null);
   };
 
+  const handleTimeSubmit = (timeData: {
+    hours: number;
+    notes: string;
+    deviations: string;
+    project: string;
+  }) => {
+    // In real app, this would submit to backend
+    console.log('Time entry submitted:', timeData);
+  };
+
   const handleProjectSelect = (projectId: string, projectName: string) => {
     setSelectedProject(projectId);
     setSelectedProjectName(projectName);
   };
-
-  const renderReportsTab = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Clock className="w-5 h-5 text-primary" />
-              Veckotimmar
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-foreground mb-2">42.5h</div>
-            <div className="flex items-center gap-1 text-sm text-success">
-              <TrendingUp className="w-4 h-4" />
-              +5% från förra veckan
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Users className="w-5 h-5 text-primary" />
-              Aktiva projekt
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-foreground mb-2">3</div>
-            <div className="text-sm text-muted-foreground">
-              2 projekt aktiva denna vecka
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-primary" />
-            Projektfördelning denna månad
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Villa Södermalm</span>
-              <span className="text-sm text-muted-foreground">65h (58%)</span>
-            </div>
-            <div className="w-full bg-secondary rounded-full h-2">
-              <div className="bg-primary h-2 rounded-full" style={{ width: '58%' }}></div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Kontorskomplex Malmö</span>
-              <span className="text-sm text-muted-foreground">35h (31%)</span>
-            </div>
-            <div className="w-full bg-secondary rounded-full h-2">
-              <div className="bg-accent h-2 rounded-full" style={{ width: '31%' }}></div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Skola Göteborg</span>
-              <span className="text-sm text-muted-foreground">12h (11%)</span>
-            </div>
-            <div className="w-full bg-secondary rounded-full h-2">
-              <div className="bg-success h-2 rounded-full" style={{ width: '11%' }}></div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
 
   const renderTabContent = () => {
     switch (activeTab) {
       case 'clock':
         return (
           <div className="space-y-6">
-            <ProjectSelector 
-              selectedProject={selectedProject}
-              onProjectSelect={handleProjectSelect}
-            />
-            <TimeClockCard
-              isWorking={isWorking}
-              onClockIn={handleClockIn}
-              onClockOut={handleClockOut}
-              currentProject={selectedProjectName || "Inget projekt valt"}
-              workTime={workTime}
-            />
+            {!selectedProject && (
+              <ProjectFolders 
+                selectedProject={selectedProject}
+                onProjectSelect={handleProjectSelect}
+                userRole={userRole}
+              />
+            )}
+            
+            {selectedProject && (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>Aktuellt projekt</span>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setSelectedProject("");
+                          setSelectedProjectName("");
+                        }}
+                      >
+                        Byt projekt
+                      </Button>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Badge variant="outline" className="text-base px-3 py-1">
+                      {selectedProjectName}
+                    </Badge>
+                  </CardContent>
+                </Card>
+
+                <div className="flex gap-2 mb-4">
+                  <Button
+                    variant={timeEntryMode === 'clock' ? 'default' : 'outline'}
+                    onClick={() => setTimeEntryMode('clock')}
+                    size="sm"
+                  >
+                    <Clock className="w-4 h-4 mr-2" />
+                    Stämpelklocka
+                  </Button>
+                  <Button
+                    variant={timeEntryMode === 'quick' ? 'default' : 'outline'}
+                    onClick={() => setTimeEntryMode('quick')}
+                    size="sm"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Snabbregistrering
+                  </Button>
+                </div>
+
+                {timeEntryMode === 'clock' ? (
+                  <TimeClockCard
+                    isWorking={isWorking}
+                    onClockIn={handleClockIn}
+                    onClockOut={handleClockOut}
+                    currentProject={selectedProjectName}
+                    workTime={workTime}
+                  />
+                ) : (
+                  <QuickTimeEntry
+                    selectedProject={selectedProjectName}
+                    onTimeSubmit={handleTimeSubmit}
+                  />
+                )}
+              </>
+            )}
           </div>
         );
+      
+      case 'projects':
+        return (
+          <ProjectFolders 
+            selectedProject={selectedProject}
+            onProjectSelect={handleProjectSelect}
+            userRole={userRole}
+          />
+        );
+      
       case 'overview':
-        return <DailyOverview />;
+        if (userRole === 'admin') {
+          return (
+            <AdminDashboard selectedProject={selectedProject} />
+          );
+        } else {
+          return <DailyOverview />;
+        }
+      
+      case 'admin':
+        return userRole === 'admin' ? (
+          <AdminDashboard selectedProject={selectedProject} />
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Åtkomst nekad</p>
+          </div>
+        );
+      
+      case 'notifications':
+        return <PushNotifications userRole={userRole} />;
+      
       case 'profile':
         return <UserProfile />;
-      case 'reports':
-        return renderReportsTab();
+      
       default:
         return null;
     }
@@ -162,12 +193,45 @@ const Index = () => {
       {/* Header */}
       <header className="bg-card border-b border-border shadow-sm">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-foreground">
-            Tidrapportering
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Byggfirma Nord AB
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">
+                Tidrapportering
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Byggfirma Nord AB
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Badge 
+                variant={userRole === 'admin' ? 'default' : 'secondary'}
+                className="px-3 py-1"
+              >
+                <Shield className="w-3 h-3 mr-1" />
+                {userRole === 'admin' ? 'Administratör' : 'Anställd'}
+              </Badge>
+              
+              {userRole === 'admin' && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {/* In real app: invite employee */}}
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Bjud in
+                </Button>
+              )}
+              
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setUserRole(userRole === 'admin' ? 'employee' : 'admin')}
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -181,6 +245,7 @@ const Index = () => {
         <Navigation 
           activeTab={activeTab}
           onTabChange={setActiveTab}
+          userRole={userRole}
         />
       </div>
     </div>

@@ -1,22 +1,37 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Clock, Calendar, User, BarChart3 } from "lucide-react";
+import { Clock, Calendar, User, BarChart3, FolderOpen, Settings, Bell, Shield } from "lucide-react";
 
-type TabType = 'clock' | 'overview' | 'profile' | 'reports';
+type TabType = 'clock' | 'projects' | 'overview' | 'admin' | 'profile' | 'notifications';
 
 interface NavigationProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
+  userRole?: 'admin' | 'employee';
 }
 
-const navigationItems = [
-  { id: 'clock' as TabType, label: 'Tidur', icon: Clock },
-  { id: 'overview' as TabType, label: 'Översikt', icon: Calendar },
-  { id: 'reports' as TabType, label: 'Rapporter', icon: BarChart3 },
-  { id: 'profile' as TabType, label: 'Profil', icon: User },
-];
+const getNavigationItems = (userRole: 'admin' | 'employee' = 'employee') => {
+  const employeeItems = [
+    { id: 'clock' as TabType, label: 'Tidur', icon: Clock },
+    { id: 'projects' as TabType, label: 'Projekt', icon: FolderOpen },
+    { id: 'overview' as TabType, label: 'Översikt', icon: Calendar },
+    { id: 'notifications' as TabType, label: 'Notiser', icon: Bell },
+    { id: 'profile' as TabType, label: 'Profil', icon: User },
+  ];
 
-export const Navigation = ({ activeTab, onTabChange }: NavigationProps) => {
+  const adminItems = [
+    { id: 'clock' as TabType, label: 'Tidur', icon: Clock },
+    { id: 'projects' as TabType, label: 'Projekt', icon: FolderOpen },
+    { id: 'admin' as TabType, label: 'Admin', icon: Shield },
+    { id: 'overview' as TabType, label: 'Rapporter', icon: BarChart3 },
+    { id: 'profile' as TabType, label: 'Profil', icon: User },
+  ];
+
+  return userRole === 'admin' ? adminItems : employeeItems;
+};
+
+export const Navigation = ({ activeTab, onTabChange, userRole = 'employee' }: NavigationProps) => {
+  const navigationItems = getNavigationItems(userRole);
   return (
     <nav className="bg-card border-t border-border shadow-lg">
       <div className="flex justify-around items-center py-2">
