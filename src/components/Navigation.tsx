@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Clock, Calendar, User, BarChart3, FolderOpen, Settings, Bell, Shield } from "lucide-react";
+import { Clock, Calendar, User, BarChart3, FolderOpen, Settings, Bell, Shield, Heart, Plane } from "lucide-react";
 
-type TabType = 'clock' | 'projects' | 'overview' | 'admin' | 'profile' | 'notifications';
+type TabType = 'clock' | 'projects' | 'overview' | 'admin' | 'profile' | 'sick-leave' | 'vacation';
 
 interface NavigationProps {
   activeTab: TabType;
@@ -13,9 +13,10 @@ interface NavigationProps {
 const getNavigationItems = (userRole: 'admin' | 'employee' = 'employee') => {
   const employeeItems = [
     { id: 'clock' as TabType, label: 'Tidur', icon: Clock },
+    { id: 'sick-leave' as TabType, label: 'Sjuk', icon: Heart },
+    { id: 'vacation' as TabType, label: 'Ledighet', icon: Plane },
     { id: 'projects' as TabType, label: 'Projekt', icon: FolderOpen },
     { id: 'overview' as TabType, label: 'Översikt', icon: Calendar },
-    { id: 'notifications' as TabType, label: 'Notiser', icon: Bell },
     { id: 'profile' as TabType, label: 'Profil', icon: User },
   ];
 

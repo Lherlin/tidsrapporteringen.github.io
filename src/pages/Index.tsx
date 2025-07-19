@@ -4,16 +4,21 @@ import { TimeClockCard } from "@/components/TimeClockCard";
 import { ProjectSelector } from "@/components/ProjectSelector";
 import { ProjectFolders } from "@/components/ProjectFolders";
 import { QuickTimeEntry } from "@/components/QuickTimeEntry";
-import { DailyOverview } from "@/components/DailyOverview";
+import { TimeOverview } from "@/components/TimeOverview";
 import { UserProfile } from "@/components/UserProfile";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { PushNotifications } from "@/components/PushNotifications";
+import { SickLeave } from "@/components/SickLeave";
+import { VacationRequest } from "@/components/VacationRequest";
+import { CompanyDirectory } from "@/components/CompanyDirectory";
+import { ScheduleManagement } from "@/components/ScheduleManagement";
+import { LocationTimeEntry } from "@/components/LocationTimeEntry";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, TrendingUp, Clock, Users, Settings, Shield, Plus, Mail } from "lucide-react";
+import { BarChart3, TrendingUp, Clock, Users, Settings, Shield, Plus, Mail, MapPin } from "lucide-react";
 
-type TabType = 'clock' | 'projects' | 'overview' | 'admin' | 'profile' | 'notifications';
+type TabType = 'clock' | 'projects' | 'overview' | 'admin' | 'profile' | 'sick-leave' | 'vacation';
 type UserRole = 'admin' | 'employee';
 
 const Index = () => {
@@ -25,6 +30,9 @@ const Index = () => {
   const [workTime, setWorkTime] = useState("00:00");
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [timeEntryMode, setTimeEntryMode] = useState<'clock' | 'quick'>('clock');
+  const [locationVerified, setLocationVerified] = useState(false);
+  const [requireLocation, setRequireLocation] = useState(true);
+  const [activeSubTab, setActiveSubTab] = useState<'directory' | 'settings' | 'profile' | 'dashboard' | 'schedules' | 'approvals'>('directory');
 
   // Timer logic for tracking work time
   useEffect(() => {
@@ -47,9 +55,15 @@ const Index = () => {
 
   const handleClockIn = () => {
     if (!selectedProject) {
-      // Could show a toast here asking to select a project first
+      alert('Välj ett projekt först');
       return;
     }
+    
+    if (requireLocation && !locationVerified) {
+      alert('Du måste vara på rätt plats för att stämpla in');
+      return;
+    }
+    
     setIsWorking(true);
     setStartTime(new Date());
   };
@@ -131,6 +145,16 @@ const Index = () => {
                   </Button>
                 </div>
 
+                {/* Location verification */}
+                {selectedProject && requireLocation && (
+                  <LocationTimeEntry
+                    selectedProject={selectedProject}
+                    selectedProjectName={selectedProjectName}
+                    onLocationVerified={setLocationVerified}
+                    isRequired={requireLocation}
+                  />
+                )}
+
                 {timeEntryMode === 'clock' ? (
                   <TimeClockCard
                     isWorking={isWorking}
@@ -165,23 +189,131 @@ const Index = () => {
             <AdminDashboard selectedProject={selectedProject} />
           );
         } else {
-          return <DailyOverview />;
+          return <TimeOverview />;
         }
       
       case 'admin':
         return userRole === 'admin' ? (
-          <AdminDashboard selectedProject={selectedProject} />
+          <div className="space-y-6">
+            <div className="flex gap-2 mb-4">
+              <Button
+                variant={activeSubTab === 'dashboard' ? 'default' : 'outline'}
+                onClick={() => setActiveSubTab('dashboard' as any)}
+                size="sm"
+              >
+                Dashboard
+              </Button>
+              <Button
+                variant={activeSubTab === 'schedules' ? 'default' : 'outline'}
+                onClick={() => setActiveSubTab('schedules' as any)}
+                size="sm"
+              >
+                Schema
+              </Button>
+              <Button
+                variant={activeSubTab === 'approvals' ? 'default' : 'outline'}
+                onClick={() => setActiveSubTab('approvals' as any)}
+                size="sm"
+              >
+                Godkännanden
+              </Button>
+            </div>
+            
+            {activeSubTab === 'schedules' ? (
+              <ScheduleManagement />
+            ) : activeSubTab === 'approvals' ? (
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Väntande godkännanden</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">Sjukanmälningar och ledighetsansökningar som väntar på godkännande visas här.</p>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <AdminDashboard selectedProject={selectedProject} />
+            )}
+          </div>
         ) : (
           <div className="text-center py-8">
             <p className="text-muted-foreground">Åtkomst nekad</p>
           </div>
         );
       
-      case 'notifications':
-        return <PushNotifications userRole={userRole} />;
+      case 'sick-leave':
+        return <SickLeave />;
+      
+      case 'vacation':
+        return <VacationRequest />;
       
       case 'profile':
-        return <UserProfile />;
+        return (
+          <div className="space-y-6">
+            <div className="flex gap-2 mb-4">
+              <Button
+                variant={activeSubTab === 'profile' ? 'default' : 'outline'}
+                onClick={() => setActiveSubTab('profile' as any)}
+                size="sm"
+              >
+                Profil
+              </Button>
+              <Button
+                variant={activeSubTab === 'directory' ? 'default' : 'outline'}
+                onClick={() => setActiveSubTab('directory')}
+                size="sm"
+              >
+                Företagskatalog
+              </Button>
+              <Button
+                variant={activeSubTab === 'settings' ? 'default' : 'outline'}
+                onClick={() => setActiveSubTab('settings')}
+                size="sm"
+              >
+                Inställningar
+              </Button>
+            </div>
+            
+            {activeSubTab === 'directory' ? (
+              <CompanyDirectory />
+            ) : activeSubTab === 'settings' ? (
+              <div className="space-y-6">
+                <PushNotifications userRole={userRole} />
+                
+                {userRole === 'admin' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-primary" />
+                        Platsinställningar
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium">Kräv platsverifiering</div>
+                          <div className="text-sm text-muted-foreground">
+                            Tvinga anställda att vara på rätt plats för tidsstämpling
+                          </div>
+                        </div>
+                        <Button
+                          variant={requireLocation ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setRequireLocation(!requireLocation)}
+                        >
+                          {requireLocation ? 'På' : 'Av'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            ) : (
+              <UserProfile />
+            )}
+          </div>
+        );
       
       default:
         return null;

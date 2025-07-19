@@ -87,7 +87,7 @@ export const UserProfile = ({ user = defaultUser }: UserProfileProps) => {
             className="w-full justify-start h-12"
           >
             <Settings className="w-5 h-5 mr-3" />
-            Inställningar
+            Inställningar & Notiser
           </Button>
           
           <Button 
