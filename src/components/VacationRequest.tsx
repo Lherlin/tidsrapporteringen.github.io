@@ -175,6 +175,7 @@ export const VacationRequest = () => {
               <div className="flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-muted-foreground mt-0.5" />
                 <div className="text-xs text-muted-foreground">
+                  <p><strong>Viktigt:</strong> Ansök om ledighet i god tid, helst en månad innan tillfället du ska vara ledig, senast.</p>
                   <p>Ledighetsansökan skickas till din chef för godkännande.</p>
                   <p>Ansök i god tid för att säkerställa godkännande.</p>
                 </div>

@@ -13,6 +13,7 @@ import { VacationRequest } from "@/components/VacationRequest";
 import { CompanyDirectory } from "@/components/CompanyDirectory";
 import { ScheduleManagement } from "@/components/ScheduleManagement";
 import { LocationTimeEntry } from "@/components/LocationTimeEntry";
+import { CookieConsent } from "@/components/CookieConsent";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -368,7 +369,7 @@ const Index = () => {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 container mx-auto px-4 py-6 pb-20">
+      <main className="flex-1 container mx-auto px-4 py-6 pb-20 mobile-optimized">
         {renderTabContent()}
       </main>
 
@@ -380,6 +381,8 @@ const Index = () => {
           userRole={userRole}
         />
       </div>
+      
+      <CookieConsent />
     </div>
   );
 };
