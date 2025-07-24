@@ -14,10 +14,13 @@ import { CompanyDirectory } from "@/components/CompanyDirectory";
 import { ScheduleManagement } from "@/components/ScheduleManagement";
 import { LocationTimeEntry } from "@/components/LocationTimeEntry";
 import { CookieConsent } from "@/components/CookieConsent";
+import { ProfileSetup } from "@/components/ProfileSetup";
+import { RoleManagement } from "@/components/RoleManagement";
+import { DailyOverview } from "@/components/DailyOverview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, TrendingUp, Clock, Users, Settings, Shield, Plus, Mail, MapPin } from "lucide-react";
+import { BarChart3, TrendingUp, Clock, Users, Settings, Shield, Plus, Mail, MapPin, User } from "lucide-react";
 
 type TabType = 'clock' | 'projects' | 'overview' | 'admin' | 'profile' | 'sick-leave' | 'vacation';
 type UserRole = 'admin' | 'employee';
@@ -33,7 +36,9 @@ const Index = () => {
   const [timeEntryMode, setTimeEntryMode] = useState<'clock' | 'quick'>('clock');
   const [locationVerified, setLocationVerified] = useState(false);
   const [requireLocation, setRequireLocation] = useState(true);
-  const [activeSubTab, setActiveSubTab] = useState<'directory' | 'settings' | 'profile' | 'dashboard' | 'schedules' | 'approvals'>('directory');
+  const [activeSubTab, setActiveSubTab] = useState<'directory' | 'settings' | 'profile' | 'dashboard' | 'schedules' | 'approvals' | 'roles' | 'overview'>('directory');
+  const [showProfileSetup, setShowProfileSetup] = useState(false); // For first-time login
+  const [userProfile, setUserProfile] = useState(null);
 
   // Timer logic for tracking work time
   useEffect(() => {
@@ -55,23 +60,34 @@ const Index = () => {
   }, [isWorking, startTime]);
 
   const handleClockIn = () => {
-    if (!selectedProject) {
-      alert('Välj ett projekt först');
-      return;
+    try {
+      if (!selectedProject) {
+        alert('Välj ett projekt först');
+        return;
+      }
+      
+      if (requireLocation && !locationVerified) {
+        alert('Du måste vara på rätt plats för att stämpla in');
+        return;
+      }
+      
+      setIsWorking(true);
+      setStartTime(new Date());
+    } catch (error) {
+      console.error('Error clocking in:', error);
+      alert('Ett fel uppstod vid instämpling');
     }
-    
-    if (requireLocation && !locationVerified) {
-      alert('Du måste vara på rätt plats för att stämpla in');
-      return;
-    }
-    
-    setIsWorking(true);
-    setStartTime(new Date());
   };
 
   const handleClockOut = () => {
-    setIsWorking(false);
-    setStartTime(null);
+    try {
+      setIsWorking(false);
+      setStartTime(null);
+      setWorkTime("00:00");
+    } catch (error) {
+      console.error('Error clocking out:', error);
+      alert('Ett fel uppstod vid utstämpling');
+    }
   };
 
   const handleTimeSubmit = (timeData: {
@@ -218,6 +234,20 @@ const Index = () => {
               >
                 Godkännanden
               </Button>
+              <Button
+                variant={activeSubTab === 'roles' ? 'default' : 'outline'}
+                onClick={() => setActiveSubTab('roles' as any)}
+                size="sm"
+              >
+                Roller
+              </Button>
+              <Button
+                variant={activeSubTab === 'overview' ? 'default' : 'outline'}
+                onClick={() => setActiveSubTab('overview' as any)}
+                size="sm"
+              >
+                Personal
+              </Button>
             </div>
             
             {activeSubTab === 'schedules' ? (
@@ -233,6 +263,10 @@ const Index = () => {
                   </CardContent>
                 </Card>
               </div>
+            ) : activeSubTab === 'roles' ? (
+              <RoleManagement />
+            ) : activeSubTab === 'overview' ? (
+              <DailyOverview />
             ) : (
               <AdminDashboard selectedProject={selectedProject} />
             )}
@@ -321,6 +355,19 @@ const Index = () => {
     }
   };
 
+  // Show profile setup for first-time users
+  if (showProfileSetup) {
+    return (
+      <ProfileSetup 
+        onComplete={(profileData) => {
+          setUserProfile(profileData);
+          setShowProfileSetup(false);
+        }} 
+        isFirstTime={true}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
@@ -359,7 +406,17 @@ const Index = () => {
               <Button 
                 variant="ghost" 
                 size="sm"
+                onClick={() => setShowProfileSetup(true)}
+                title="Redigera profil"
+              >
+                <User className="w-4 h-4" />
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="sm"
                 onClick={() => setUserRole(userRole === 'admin' ? 'employee' : 'admin')}
+                title="Växla användarroll (demo)"
               >
                 <Settings className="w-4 h-4" />
               </Button>
