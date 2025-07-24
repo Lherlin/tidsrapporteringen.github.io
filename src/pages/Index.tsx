@@ -20,7 +20,18 @@ import { DailyOverview } from "@/components/DailyOverview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, TrendingUp, Clock, Users, Settings, Shield, Plus, Mail, MapPin, User } from "lucide-react";
+import { 
+  BarChart3, 
+  TrendingUp, 
+  Clock, 
+  Users, 
+  Settings, 
+  Shield, 
+  Plus, 
+  Mail, 
+  MapPin, 
+  User 
+} from "lucide-react";
 
 type TabType = 'clock' | 'projects' | 'overview' | 'admin' | 'profile' | 'sick-leave' | 'vacation';
 type UserRole = 'admin' | 'employee';
