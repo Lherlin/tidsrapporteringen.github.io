@@ -17,7 +17,6 @@ import { CookieConsent } from "@/components/CookieConsent";
 import { ProfileSetup } from "@/components/ProfileSetup";
 import { RoleManagement } from "@/components/RoleManagement";
 import { DailyOverview } from "@/components/DailyOverview";
-import { AuthScreen } from "@/components/AuthScreen";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,8 +50,6 @@ const Index = () => {
   const [activeSubTab, setActiveSubTab] = useState<'directory' | 'settings' | 'profile' | 'dashboard' | 'schedules' | 'approvals' | 'roles' | 'overview'>('directory');
   const [showProfileSetup, setShowProfileSetup] = useState(false); // For first-time login
   const [userProfile, setUserProfile] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ email: string; role: 'admin' | 'employee'; name: string } | null>(null);
 
   // Timer logic for tracking work time
   useEffect(() => {
@@ -369,30 +366,6 @@ const Index = () => {
     }
   };
 
-  // Handle authentication
-  const handleLogin = (userData: { email: string; role: 'admin' | 'employee'; name: string }) => {
-    setCurrentUser(userData);
-    setUserRole(userData.role);
-    setIsAuthenticated(true);
-    
-    // Show profile setup for new users
-    if (!userProfile) {
-      setShowProfileSetup(true);
-    }
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setCurrentUser(null);
-    setUserProfile(null);
-    setShowProfileSetup(false);
-  };
-
-  // Show auth screen if not authenticated
-  if (!isAuthenticated) {
-    return <AuthScreen onLogin={handleLogin} />;
-  }
-
   // Show profile setup for first-time users
   if (showProfileSetup) {
     return (
@@ -430,10 +403,6 @@ const Index = () => {
                 {userRole === 'admin' ? 'Administratör' : 'Anställd'}
               </Badge>
               
-              <span className="text-sm text-muted-foreground hidden sm:inline">
-                {currentUser?.name || currentUser?.email}
-              </span>
-              
               {userRole === 'admin' && (
                 <Button 
                   variant="outline" 
@@ -457,8 +426,8 @@ const Index = () => {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={handleLogout}
-                title="Logga ut"
+                onClick={() => setUserRole(userRole === 'admin' ? 'employee' : 'admin')}
+                title="Växla användarroll (demo)"
               >
                 <Settings className="w-4 h-4" />
               </Button>
